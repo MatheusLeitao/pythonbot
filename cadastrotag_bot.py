@@ -6,19 +6,18 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
-driver = webdriver.Chrome("C:\wamp64\www\python\webdriver\chromedriver.exe")
-driver.set_page_load_timeout(10)
 
-def getid(list):
+
+def getid(list): # FUNÇÃO PARA PEGAR NOVO ID APÓS O SEGUNDO APT *1
     for mec in list:
         id = mec.get_attribute('id')
         return id
 
-def qtdtags():
+def qtdtags(): #FUNÇÃO PARA PEGAR QUANTIDADE DE TAG NO CONDOMÍNIO.
     datas = []
     counter = 0
     tagsqtd = 0
-    with open('C:/wamp64/www/python/noems.txt', 'r') as file:
+    with open('D:/python/noems.txt', 'r') as file:
         time.sleep(1)
         linesfromfile = file.readlines()
         for tags in linesfromfile:
@@ -31,26 +30,75 @@ def qtdtags():
             counter = 0
     return tagsqtd
 
-def addpass():
-    with open ('C:/wamp64/www/python/login.txt', 'w+') as login:
+def addpass(login, password):
+    with open('D:/python/login.txt', 'w+') as login_file:
+        login_file.write(login)
+        login_file.write("\n")
+        login_file.write(password)
+        pass
+    pass
 
+def verifyswitch(i):
+    switcher = {
+        '1': True,
+        '0': False,
+        's': True,
+        'S': True,
+        'n': False,
+        'N': False,
+    }
+    return switcher.get(i, False)
 
-
-with open('C:/wamp64/www/python/noems.txt', 'r') as file:
+with open('D:/python/noems.txt', 'r') as file:
     fileslines = file.readlines()
     deleteline = len(fileslines) - 1
     perfil = fileslines[deleteline]
 
-with open('C:/wamp64/www/python/noems.txt','w') as newfiles:
+with open('D:/python/noems.txt','w') as newfiles:
     for pos, lines in enumerate(fileslines):
         if pos is not deleteline:
             newfiles.write(lines)
 
+with open('D:/python/noems.txt', 'r') as files:
+    filesline = files.readlines()
+
+# INICIO - VERIFICAR AS SENHAS DIGITAS ANTERIORMENTE.
+login_comp = open('D:/python/login.txt', 'r')
+login_comp = login_comp.readlines()
+
+if login_comp is not None:
+    login = login_comp[0].strip('\n')
+    password = login_comp[1]
+#FIM - VERIFICAR AS SENHAS DIGITAS ANTERIORMENTE.
 
 time.sleep(1)
 
+#PEGA A QUANTIDADE DE TAG NO CONDOMÍNIO.
 qtd_tag = qtdtags()
 
+#INCIO - VERFICAR SE UTILIZARA OS DADOS DE LOGIN ANTERIOR.
+verificar = input("DIGITAR NOVO USUARIO? (S/N)")
+switer = verifyswitch(verificar)
+localweb = 'http://localhost:8080'
+
+if switer is True:
+    os.system("cls")
+
+    login = input("DIGITE O LOGIN: ")
+    password = input("DIGITE O PASSWORD: ")
+    addpass(login, password)
+    os.system('cls')
+    loading.loadingint(0.01)
+    print("\n ")
+
+else:
+    os.system('cls')
+    print(f"USUARIO E SENHA PARA O SITE {localweb} EH")
+    print(f"LOGIN: {login} \nSENHA: {password}")
+    time.sleep(5)
+
+driver = webdriver.Chrome("D:\python\webdriver\chromedriver.exe")
+driver.set_page_load_timeout(10)
 
 os.system('cls')
 
@@ -71,21 +119,18 @@ z = 0
 os.system('cls')
 
 
-localweb = 'http://localhost:8080'
-user = "admin"
-password = "tattica123web"
+# user = "admin"
+# password = "tattica123web"
 
 print(f"LOGANDO NO SITE {localweb}")
-with open('C:/wamp64/www/python/noems.txt', 'r') as files:
-    filesline = files.readlines()
 
 driver.get(localweb)
 time.sleep(1)
-print(f"USUARIO: {user}")
+print(f"USUARIO: {login}")
 userpath = driver.find_element_by_name('user')
 print(f"SENHA: {password}")
 passwordpath = driver.find_element_by_name('password')
-userpath.send_keys(user)
+userpath.send_keys(login)
 passwordpath.send_keys(password)
 passwordpath.send_keys(Keys.ENTER)
 print("ADICIONANDO NOVO CADASTRO")
@@ -134,7 +179,7 @@ for tags in filesline:
         if z == 0:
             okid = ""
             time.sleep(4)
-            driver.find_element_by_xpath('//*[contains(text(), "OK")]').click()#Clicar em OK quando salva
+            # driver.find_element_by_xpath('//*[contains(text(), "OK")]').click()#Clicar em OK quando salva
             okid = driver.find_element_by_xpath('//*[contains(text(), "OK")]').get_attribute('xpath')
         else:
             deleteElement = driver.find_element_by_xpath('//*[contains(text(), "OK")]').get_attribute('id')
@@ -144,11 +189,11 @@ for tags in filesline:
             time.sleep(2)
             nextId = driver.find_element_by_xpath('//*[contains(text(), "OK")]').get_attribute('id')
             newElement = "button-"+ nextId[7:11] +"-btnEl"
-            driver.find_element_by_id(newElement).click()
+            # driver.find_element_by_id(newElement).click()
             pass
         print("ADICIONANDO NOVO APARTAMENTO...")
         time.sleep(0.9)
-        driver.find_element_by_id('tbr_mnu_usuarios_toolbar-btnEl').click()#Clicar em adicionar novo usuario
+        # driver.find_element_by_id('tbr_mnu_usuarios_toolbar-btnEl').click()#Clicar em adicionar novo usuario
 
         x = 0
         z += 1
@@ -156,3 +201,5 @@ for tags in filesline:
     pass
 
 # C:\Users\MATHEUS-PC\AppData\Local\Programs\Python\Python38\python.exe -i C:/wamp64/www/python/cadastrotag_bot.py
+# *1 - Após adicionarmos um condomínio, os demais apartamentos é necessário excluir uma <div> invisível com mesmo conteudo
+# da <div> que queremos pegar, sem essa exclusão por JS, não funciona.
